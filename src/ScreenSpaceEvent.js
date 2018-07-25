@@ -1,22 +1,17 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-import { screenSpaceEventHandlerType } from "./types";
+import { ScreenSpaceEventHandlerContext } from "./context";
 
-export default class ScreenSpaceEvent extends React.PureComponent {
+class ScreenSpaceEvent extends React.PureComponent {
   static propTypes = {
     action: PropTypes.func,
     modifier: PropTypes.number,
     type: PropTypes.number.isRequired,
   };
 
-  static contextTypes = {
-    screenSpaceEventHandler: screenSpaceEventHandlerType,
-  };
-
   componentDidMount() {
-    const { action, modifier, type } = this.props;
-    const { screenSpaceEventHandler } = this.context;
+    const { screenSpaceEventHandler, action, modifier, type } = this.props;
     if (action) {
       screenSpaceEventHandler.setInputAction(action, type, modifier);
     } else {
@@ -26,14 +21,13 @@ export default class ScreenSpaceEvent extends React.PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { screenSpaceEventHandler } = this.context;
+    const { screenSpaceEventHandler } = this.props;
     screenSpaceEventHandler.removeInputAction(prevProps.type, prevProps.modifier);
     this.componentDidMount();
   }
 
   componentWillUnmount() {
-    const { action, modifier, type } = this.props;
-    const { screenSpaceEventHandler } = this.context;
+    const { screenSpaceEventHandler, action, modifier, type } = this.props;
     if (screenSpaceEventHandler && !screenSpaceEventHandler.isDestroyed() && action) {
       screenSpaceEventHandler.removeInputAction(type, modifier);
     }
@@ -43,3 +37,11 @@ export default class ScreenSpaceEvent extends React.PureComponent {
     return null;
   }
 }
+
+const ScreenSpaceEventContainer = props => (
+  <ScreenSpaceEventHandlerContext.Consumer>
+    {screenSpaceEventHandler => <ScreenSpaceEvent {...props} screenSpaceEventHandler={screenSpaceEventHandler} />}
+  </ScreenSpaceEventHandlerContext.Consumer>
+);
+
+export default ScreenSpaceEventContainer;

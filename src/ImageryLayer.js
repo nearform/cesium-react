@@ -2,9 +2,9 @@ import PropTypes from "prop-types";
 import { ImageryLayer as CesiumImageryLayer } from "cesium";
 
 import CesiumComponent from "./CesiumComponent";
-import { imageryLayerCollectionType, sceneType } from "./types";
+import { SceneContext } from "./context";
 
-export default class imageryLayer extends CesiumComponent {
+class ImageryLayer extends CesiumComponent {
   static propTypes = {
     ...CesiumComponent.propTypes,
     availability: PropTypes.any,
@@ -36,11 +36,6 @@ export default class imageryLayer extends CesiumComponent {
     wall: PropTypes.any,
   };
 
-  static contextTypes = {
-    imageryLayerCollection: imageryLayerCollectionType,
-    scene: sceneType,
-  };
-
   static cesiumProps = [
     "alpha",
     "brightness",
@@ -65,10 +60,7 @@ export default class imageryLayer extends CesiumComponent {
   static cesiumEvents = ["definitionChanged"];
 
   get parent() {
-    const { imageryLayerCollection, scene } = this.context;
-    if (imageryLayerCollection && !imageryLayerCollection.isDestroyed()) {
-      return imageryLayerCollection;
-    }
+    const { scene } = this.props;
     if (scene && !scene.isDestroyed()) {
       return scene.imageryLayers;
     }
@@ -91,3 +83,11 @@ export default class imageryLayer extends CesiumComponent {
     }
   }
 }
+
+const ImageryLayerContainer = props => (
+  <SceneContext.Consumer>
+    {scene => <ImageryLayer {...props} scene={scene} />}
+  </SceneContext.Consumer>
+);
+
+export default ImageryLayerContainer;

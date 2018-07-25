@@ -1,17 +1,12 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-import { cameraType, sceneType } from "./types";
+import { SceneContext, CameraContext } from "./context";
 
 // abstract
-export default class CameraOperation extends React.PureComponent {
+class CameraOperation extends React.PureComponent {
   static propTypes = {
     cancelCameraFlight: PropTypes.bool,
-  };
-
-  static contextTypes = {
-    camera: cameraType,
-    scene: sceneType,
   };
 
   componentDidMount() {
@@ -30,12 +25,21 @@ export default class CameraOperation extends React.PureComponent {
     }
   }
 
-  get camera() {
-    const { camera, scene } = this.context;
-    return camera || scene.camera;
-  }
-
   render() {
     return null;
   }
 }
+
+const CameraOperationContainer = props => (
+  <SceneContext.Consumer>
+    {scene => (
+      <CameraContext.Consumer>
+        {camera => (
+          <CameraOperation {...props} camera={camera || scene.camera} />
+        )}
+      </CameraContext.Consumer>
+    )}
+  </SceneContext.Consumer>
+);
+
+export default CameraOperationContainer;

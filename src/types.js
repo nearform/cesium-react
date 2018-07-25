@@ -1,5 +1,6 @@
 import {
   Camera,
+  Cesium3DTileset,
   CesiumWidget,
   DataSourceCollection,
   EntityCollection,
@@ -13,6 +14,7 @@ import {
 import PropTypes from "prop-types";
 
 export const cameraType = PropTypes.instanceOf(Camera);
+export const cesium3DTilesetType = PropTypes.instanceOf(Cesium3DTileset);
 export const cesiumWidgetType = PropTypes.instanceOf(CesiumWidget);
 export const dataSourceCollectionType = PropTypes.instanceOf(DataSourceCollection);
 export const entityCollectionType = PropTypes.instanceOf(EntityCollection);

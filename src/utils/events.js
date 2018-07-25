@@ -37,8 +37,8 @@ export const updateEvents = (target, prevEvents, newEvents) => {
 };
 
 // eslint-disable-next-line react/destructuring-assignment
-export const getEventProps = (eventNames, props) =>
-  eventNames.reduce((a, b) => {
+export const getEventProps = (eventNames, props) => {
+  const a = eventNames.reduce((a, b) => {
     const pn = `on${b[0].toUpperCase()}${b.slice(1).replace(/Event$/, "")}`;
     // eslint-disable-next-line react/destructuring-assignment
     return typeof props[pn] === "function"
@@ -49,3 +49,5 @@ export const getEventProps = (eventNames, props) =>
         }
       : a;
   }, {});
+  return a
+}

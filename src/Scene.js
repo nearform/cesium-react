@@ -2,6 +2,8 @@ import PropTypes from "prop-types";
 import { SceneMode } from "cesium";
 
 import CesiumComponent from "./CesiumComponent";
+import { SceneContext } from "./context";
+
 import { cesiumWidgetType, sceneType } from "./types";
 
 export default class Scene extends CesiumComponent {
@@ -56,10 +58,6 @@ export default class Scene extends CesiumComponent {
     cesiumWidget: cesiumWidgetType,
   };
 
-  static childContextTypes = {
-    scene: sceneType,
-  };
-
   static cesiumProps = [
     "backgroundColor",
     "canvas",
@@ -109,12 +107,6 @@ export default class Scene extends CesiumComponent {
 
   static setCesiumOptionsAfterCreate = true;
 
-  getChildContext() {
-    return {
-      scene: this.cesiumElement,
-    };
-  }
-
   createCesiumElement() {
     const { cesiumWidget } = this.context;
     const s = cesiumWidget.scene;
@@ -153,5 +145,13 @@ export default class Scene extends CesiumComponent {
     } else {
       scene.mode = mode;
     }
+  }
+
+  render() {
+    return (
+      <SceneContext.Provider value={this.cesiumElement}>
+        {this.props.children}
+      </SceneContext.Provider>
+    );
   }
 }

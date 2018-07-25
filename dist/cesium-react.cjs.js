@@ -6,10 +6,11 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 
 var cesium = require('cesium');
 var PropTypes = _interopDefault(require('prop-types'));
-var React = _interopDefault(require('react'));
+var React$1 = _interopDefault(require('react'));
 var ReactDOMServer = _interopDefault(require('react-dom/server.browser'));
 
 var cameraType = PropTypes.instanceOf(cesium.Camera);
+var cesium3DTilesetType = PropTypes.instanceOf(cesium.Cesium3DTileset);
 var cesiumWidgetType = PropTypes.instanceOf(cesium.CesiumWidget);
 var dataSourceCollectionType = PropTypes.instanceOf(cesium.DataSourceCollection);
 var entityCollectionType = PropTypes.instanceOf(cesium.EntityCollection);
@@ -22,6 +23,7 @@ var viewerType = PropTypes.instanceOf(cesium.Viewer);
 
 var types = /*#__PURE__*/Object.freeze({
   cameraType: cameraType,
+  cesium3DTilesetType: cesium3DTilesetType,
   cesiumWidgetType: cesiumWidgetType,
   dataSourceCollectionType: dataSourceCollectionType,
   entityCollectionType: entityCollectionType,
@@ -31,6 +33,30 @@ var types = /*#__PURE__*/Object.freeze({
   sceneType: sceneType,
   screenSpaceEventHandlerType: screenSpaceEventHandlerType,
   viewerType: viewerType
+});
+
+var Cesium3DTilesetContext = React$1.createContext(null);
+var ViewerContext = React$1.createContext(null);
+var CameraContext = React$1.createContext();
+var CesiumWidgetContext = React$1.createContext();
+var DataSourcesContext = React$1.createContext();
+var EntitiesContext = React$1.createContext();
+var PointPrimitiveCollectionContext = React$1.createContext();
+var PrimitiveCollectionContext = React$1.createContext();
+var SceneContext = React$1.createContext();
+var ScreenSpaceEventHandlerContext = React$1.createContext();
+
+var index = /*#__PURE__*/Object.freeze({
+  Cesium3DTilesetContext: Cesium3DTilesetContext,
+  ViewerContext: ViewerContext,
+  CameraContext: CameraContext,
+  CesiumWidgetContext: CesiumWidgetContext,
+  DataSourcesContext: DataSourcesContext,
+  EntitiesContext: EntitiesContext,
+  PointPrimitiveCollectionContext: PointPrimitiveCollectionContext,
+  PrimitiveCollectionContext: PrimitiveCollectionContext,
+  SceneContext: SceneContext,
+  ScreenSpaceEventHandlerContext: ScreenSpaceEventHandlerContext
 });
 
 function _defineProperties(target, props) {
@@ -107,7 +133,7 @@ function _inheritsLoose(subClass, superClass) {
   subClass.__proto__ = superClass;
 }
 
-function _objectWithoutProperties(source, excluded) {
+function _objectWithoutPropertiesLoose(source, excluded) {
   if (source == null) return {};
   var target = {};
   var sourceKeys = Object.keys(source);
@@ -117,17 +143,6 @@ function _objectWithoutProperties(source, excluded) {
     key = sourceKeys[i];
     if (excluded.indexOf(key) >= 0) continue;
     target[key] = source[key];
-  }
-
-  if (Object.getOwnPropertySymbols) {
-    var sourceSymbolKeys = Object.getOwnPropertySymbols(source);
-
-    for (i = 0; i < sourceSymbolKeys.length; i++) {
-      key = sourceSymbolKeys[i];
-      if (excluded.indexOf(key) >= 0) continue;
-      if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
-      target[key] = source[key];
-    }
   }
 
   return target;
@@ -183,13 +198,14 @@ var updateEvents = function updateEvents(target, prevEvents, newEvents) {
 }; // eslint-disable-next-line react/destructuring-assignment
 
 var getEventProps = function getEventProps(eventNames, props) {
-  return eventNames.reduce(function (a, b) {
+  var a = eventNames.reduce(function (a, b) {
     var _objectSpread2;
 
     var pn = "on" + b[0].toUpperCase() + b.slice(1).replace(/Event$/, ""); // eslint-disable-next-line react/destructuring-assignment
 
     return typeof props[pn] === "function" ? _objectSpread({}, a, (_objectSpread2 = {}, _objectSpread2[b] = props[pn], _objectSpread2)) : a;
   }, {});
+  return a;
 };
 
 var CesiumComponent =
@@ -351,7 +367,7 @@ function (_React$PureComponent) {
   };
 
   return CesiumComponent;
-}(React.PureComponent);
+}(React$1.PureComponent);
 
 CesiumComponent.propTypes = {
   children: PropTypes.any,
@@ -378,16 +394,6 @@ function (_CesiumComponent) {
   }
 
   var _proto = Viewer.prototype;
-
-  _proto.getChildContext = function getChildContext() {
-    return {
-      cesiumWidget: this.cesiumElement ? this.cesiumElement.cesiumWidget : null,
-      dataSourceCollection: this.cesiumElement ? this.cesiumElement.dataSourceDisplay.dataSources : null,
-      entityCollection: this.cesiumElement ? this.cesiumElement.entities : null,
-      scene: this.cesiumElement ? this.cesiumElement.scene : null,
-      viewer: this.cesiumElement
-    };
-  };
 
   _proto.componentDidMount = function componentDidMount() {
     _CesiumComponent.prototype.componentDidMount.call(this);
@@ -445,7 +451,7 @@ function (_CesiumComponent) {
         full = _this$props.full,
         id = _this$props.id,
         style = _this$props.style;
-    return React.createElement("div", _extends({
+    return React$1.createElement("div", _extends({
       className: className,
       id: id,
       ref: function ref(e) {
@@ -458,7 +464,15 @@ function (_CesiumComponent) {
         right: "0",
         top: "0"
       } : {}, style)
-    }, containerProps), this.cesiumElement ? children : null);
+    }, containerProps), this.cesiumElement ? React$1.createElement(ViewerContext.Provider, {
+      value: this.cesiumElement
+    }, React$1.createElement(SceneContext.Provider, {
+      value: this.cesiumElement.scene
+    }, React$1.createElement(EntitiesContext.Provider, {
+      value: this.cesiumElement.entities
+    }, React$1.createElement(DataSourcesContext.Provider, {
+      value: this.cesiumElement.dataSourceDisplay.dataSources
+    }, children)))) : null);
   };
 
   return Viewer;
@@ -520,13 +534,6 @@ Viewer.propTypes = _objectSpread({}, CesiumComponent.propTypes, {
 Viewer.defaultProps = {
   style: {}
 };
-Viewer.childContextTypes = {
-  cesiumWidget: cesiumWidgetType,
-  dataSourceCollection: dataSourceCollectionType,
-  entityCollection: entityCollectionType,
-  scene: sceneType,
-  viewer: viewerType
-};
 Viewer.cesiumProps = ["animation", "baseLayerPicker", "fullscreenButton", "vrButton", "geocoder", "homeButton", "infoBox", "sceneModePicker", "selectionIndicator", "timeline", "navigationHelpButton", "navigationInstructionsInitiallyVisible", "scene3DOnly", "clockViewModel", "selectedImageryProviderViewModel", "imageryProviderViewModels", "selectedTerrainProviderViewModel", "terrainProviderViewModels", "imageryProvider", "terrainProvider", "skyBox", "skyAtmosphere", "fullscreenElement", "useDefaultRenderLoop", "targetFrameRate", "showRenderLoopErrors", "automaticallyTrackDataSourceClocks", "contextOptions", "sceneMode", "mapProjection", "globe", "orderIndependentTranslucency", "creditContainer", "creditViewport", "dataSources", "terrainExaggeration", "shadows", "terrainShadows", "mapMode2D", "projectionPicker"];
 Viewer.cesiumEvents = ["selectedEntityChanged", "trackedEntityChanged"];
 Viewer.initCesiumComponentWhenComponentDidMount = true;
@@ -549,13 +556,6 @@ function (_CesiumComponent) {
   }
 
   var _proto = CesiumWidget.prototype;
-
-  _proto.getChildContext = function getChildContext() {
-    return {
-      cesiumWidget: this.cesiumElement,
-      scene: this.cesiumElement ? this.cesiumElement.scene : null
-    };
-  };
 
   _proto.componentDidMount = function componentDidMount() {
     _CesiumComponent.prototype.componentDidMount.call(this);
@@ -585,7 +585,7 @@ function (_CesiumComponent) {
         full = _this$props.full,
         id = _this$props.id,
         style = _this$props.style;
-    return React.createElement("div", _extends({
+    return React$1.createElement("div", _extends({
       className: className,
       id: id,
       ref: function ref(e) {
@@ -598,7 +598,11 @@ function (_CesiumComponent) {
         right: "0",
         top: "0"
       } : {}, style)
-    }, containerProps), this.cesiumElement ? children : null);
+    }, containerProps), this.cesiumElement ? React$1.createElement(CesiumWidgetContext.Provider, {
+      value: this.cesiumElement
+    }, React$1.createElement(SceneContext.Provider, {
+      value: this.cesiumElement.scene
+    }, children)) : null);
   };
 
   return CesiumWidget;
@@ -635,10 +639,6 @@ CesiumWidget.propTypes = _objectSpread({}, CesiumComponent.propTypes, {
 CesiumWidget.defaultProps = {
   style: {}
 };
-CesiumWidget.childContextTypes = {
-  cesiumWidget: cesiumWidgetType,
-  scene: sceneType
-};
 CesiumWidget.cesiumProps = ["scene3DOnly", "clock", "imageryProvider", "terrainProvider", "skyBox", "skyAtmosphere", "useDefaultRenderLoop", "targetFrameRate", "showRenderLoopErrors", "contextOptions", "sceneMode", "mapProjection", "globe", "orderIndependentTranslucency", "creditContainer", "creditViewport", "terrainExaggeration", "shadows", "terrainShadows", "mapMode2D"];
 CesiumWidget.initCesiumComponentWhenComponentDidMount = true;
 
@@ -652,12 +652,6 @@ function (_CesiumComponent) {
   }
 
   var _proto = Scene.prototype;
-
-  _proto.getChildContext = function getChildContext() {
-    return {
-      scene: this.cesiumElement
-    };
-  };
 
   _proto.createCesiumElement = function createCesiumElement() {
     var cesiumWidget = this.context.cesiumWidget;
@@ -702,6 +696,12 @@ function (_CesiumComponent) {
     } else {
       scene.mode = mode;
     }
+  };
+
+  _proto.render = function render() {
+    return React.createElement(SceneContext.Provider, {
+      value: this.cesiumElement
+    }, this.props.children);
   };
 
   return Scene;
@@ -755,9 +755,6 @@ Scene.propTypes = _objectSpread({}, CesiumComponent.propTypes, {
 Scene.contextTypes = {
   cesiumWidget: cesiumWidgetType
 };
-Scene.childContextTypes = {
-  scene: sceneType
-};
 Scene.cesiumProps = ["backgroundColor", "canvas", "completeMorphOnUserInput", "debugCommandFilter", "debugShowCommands", "debugShowDepthFrustum", "debugShowFramesPerSecond", "debugShowFrustumPlanes", "debugShowFrustums", "debugShowGlobeDepth", "eyeSeparation", "farToNearRatio", "focalLength", "fog", "fxaa", "globe", "imagerySplitPosition", "invertClassification", "invertClassificationColor", "mapMode2D", "mapProjection", "minimumDisableDepthTestDistance", "moon", "nearToFarDistance2D", "pickTranslucentDepth", "rethrowRenderErrors", "shadowMap", "skyAtmosphere", "skyBox", "sun", "sunBloom", "terrainExaggeration", "terrainProvider", "useDepthPicking", "useWebVR"];
 Scene.cesiumEvents = ["morphComplete", "morphStart", "postRender", "preRender", "renderError", "terrainProviderChanged"];
 Scene.setCesiumOptionsAfterCreate = true;
@@ -773,22 +770,16 @@ function (_CesiumComponent) {
 
   var _proto = Camera.prototype;
 
-  _proto.getChildContext = function getChildContext() {
-    return {
-      camera: this.cesiumElement
-    };
-  };
-
   _proto.createCesiumElement = function createCesiumElement() {
-    var c = this.context.scene.camera;
+    var camera = this.props.scene.camera;
 
     if (typeof this.props.viewBoundingSphere === "object") {
-      c.viewBoundingSphere(this.props.viewBoundingSphere.boundingSphere, this.props.viewBoundingSphere.offset);
+      camera.viewBoundingSphere(this.props.viewBoundingSphere.boundingSphere, this.props.viewBoundingSphere.offset);
     } else if (typeof this.props.view === "object") {
-      c.setView(this.props.view);
+      camera.setView(this.props.view);
     }
 
-    return c;
+    return camera;
   };
 
   _proto.updateCesiumElement = function updateCesiumElement(camera, prev) {
@@ -797,6 +788,12 @@ function (_CesiumComponent) {
     } else if (this.props.view !== prev.view && typeof this.props.view === "object") {
       camera.setView(this.props.view);
     }
+  };
+
+  _proto.render = function render() {
+    return React.createElement(CameraContext.Provider, {
+      value: this.cesiumElement
+    }, this.props.children);
   };
 
   return Camera;
@@ -824,15 +821,17 @@ Camera.propTypes = _objectSpread({}, CesiumComponent.propTypes, {
     offset: PropTypes.any
   })
 });
-Camera.contextTypes = {
-  scene: sceneType
-};
-Camera.childContextTypes = {
-  camera: cameraType
-};
 Camera.cesiumProps = ["constrainedAxis", "defaultLookAmount", "defaultMoveAmount", "defaultRotateAmount", "defaultZoomAmount", "direction", "frustum", "maximumZoomFactor", "percentageChanged", "position", "right", "up"];
 Camera.cesiumEvents = ["changed", "moveEnd", "moveStart"];
 Camera.setCesiumOptionsAfterCreate = true;
+
+var CameraContainer = function CameraContainer(props) {
+  return React.createElement(SceneContext.Consumer, null, function (scene) {
+    return React.createElement(Camera, _extends({}, props, {
+      scene: scene
+    }));
+  });
+};
 
 var Entity =
 /*#__PURE__*/
@@ -856,7 +855,7 @@ function (_CesiumComponent) {
   };
 
   _proto.mountCesiumElement = function mountCesiumElement(entity) {
-    this.parent.add(entity);
+    this.props.entities.add(entity);
   };
 
   _proto.updateCesiumElement = function updateCesiumElement(entity, prev) {
@@ -870,20 +869,20 @@ function (_CesiumComponent) {
   };
 
   _proto.destroyCesiumElement = function destroyCesiumElement(entity) {
-    var p = this.parent;
+    var entities = this.props.entities;
 
-    if (p) {
-      p.remove(entity);
+    if (entities) {
+      entities.remove(entity);
     }
   };
 
   _createClass(Entity, [{
     key: "parent",
     get: function get() {
-      var entityCollection = this.context.entityCollection;
+      var entities = this.props.entities.entities;
 
-      if (entityCollection) {
-        return entityCollection;
+      if (entities) {
+        return entities;
       }
 
       return null;
@@ -923,13 +922,18 @@ Entity.propTypes = _objectSpread({}, CesiumComponent.propTypes, {
   viewFrom: PropTypes.any,
   wall: PropTypes.any
 });
-Entity.contextTypes = {
-  entityCollection: entityCollectionType
-};
 Entity.cesiumProps = ["availability", "show", "description", "position", "orientation", "viewFrom", "parent", "billboard", "box", "corridor", "cylinder", "ellipse", "ellipsoid", "label", "model", "name", "path", "plane", "point", "polygon", "polyline", "properties", "polylineVolume", "rectangle", "wall"];
 Entity.cesiumReadOnlyProps = ["id"];
 Entity.cesiumEvents = ["definitionChanged"];
 Entity.cesiumNoRender = true;
+
+var EntityContainer = function EntityContainer(props) {
+  return React$1.createElement(EntitiesContext.Consumer, null, function (entities) {
+    return React$1.createElement(Entity, _extends({}, props, {
+      entities: entities
+    }));
+  });
+};
 
 var DataSource =
 /*#__PURE__*/
@@ -941,12 +945,6 @@ function (_CesiumComponent) {
   }
 
   var _proto = DataSource.prototype;
-
-  _proto.getChildContext = function getChildContext() {
-    return {
-      entityCollection: this.cesiumElement ? this.cesiumElement.entities : null
-    };
-  };
 
   _proto.componentWillMount = function componentWillMount() {
     _CesiumComponent.prototype.componentWillMount.call(this);
@@ -986,13 +984,19 @@ function (_CesiumComponent) {
     }
   };
 
+  _proto.render = function render() {
+    return React.createElement(EntitiesContext.Provider, {
+      value: this.cesiumElement.entities
+    }, this.props.children);
+  };
+
   _createClass(DataSource, [{
     key: "parent",
     get: function get() {
-      var dataSourceCollection = this.context.dataSourceCollection;
+      var dataSources = this.props.dataSources;
 
-      if (dataSourceCollection && !dataSourceCollection.isDestroyed()) {
-        return dataSourceCollection;
+      if (dataSources && !dataSources.isDestroyed()) {
+        return dataSources;
       }
 
       return null;
@@ -1011,14 +1015,20 @@ DataSource.propTypes = {
   onLoading: PropTypes.func,
   show: PropTypes.bool
 };
-DataSource.contextTypes = {
-  dataSourceCollection: dataSourceCollectionType
-};
-DataSource.childContextTypes = {
-  entityCollection: entityCollectionType
-};
 DataSource.cesiumProps = ["clock", "clustering", "name", "show"];
 DataSource.cesiumEvents = ["changedEvent", "errorEvent", "loadingEvent"];
+
+var DataSourceContainer = function DataSourceContainer(props) {
+  return React.createElement(DataSourcesContext.Consumer, null, function (dataSources) {
+    return React.createElement(DataSource, _extends({}, props, {
+      dataSources: dataSources
+    }));
+  });
+};
+
+DataSourceContainer.propTypes = DataSource.propTypes;
+DataSourceContainer.cesiumProps = DataSource.cesiumProps;
+DataSourceContainer.cesiumEvents = DataSource.cesiumEvents;
 
 var CustomDataSource =
 /*#__PURE__*/
@@ -1036,12 +1046,11 @@ function (_DataSource) {
   };
 
   return CustomDataSource;
-}(DataSource);
+}(DataSourceContainer);
 
-CustomDataSource.PropTypes = _objectSpread({}, DataSource.propTypes);
-CustomDataSource.contextTypes = _objectSpread({}, DataSource.contextTypes);
-CustomDataSource.cesiumProps = DataSource.cesiumProps.concat();
-CustomDataSource.cesiumEvents = DataSource.cesiumEvents.concat();
+CustomDataSource.PropTypes = _objectSpread({}, DataSourceContainer.propTypes);
+CustomDataSource.cesiumProps = DataSourceContainer.cesiumProps.concat();
+CustomDataSource.cesiumEvents = DataSourceContainer.cesiumEvents.concat();
 
 var CzmlDataSource =
 /*#__PURE__*/
@@ -1103,9 +1112,9 @@ function (_DataSource) {
   };
 
   return CzmlDataSource;
-}(DataSource);
+}(DataSourceContainer);
 
-CzmlDataSource.propTypes = _objectSpread({}, DataSource.propTypes, {
+CzmlDataSource.propTypes = _objectSpread({}, DataSourceContainer.propTypes, {
   czml: PropTypes.oneOfType([PropTypes.object, PropTypes.arrayOf(PropTypes.object)]),
   onError: PropTypes.func,
   onLoad: PropTypes.func,
@@ -1114,9 +1123,8 @@ CzmlDataSource.propTypes = _objectSpread({}, DataSource.propTypes, {
   sourceUri: PropTypes.string,
   url: PropTypes.string
 });
-CzmlDataSource.contextTypes = _objectSpread({}, DataSource.contextTypes);
-CzmlDataSource.cesiumProps = DataSource.cesiumProps.concat();
-CzmlDataSource.cesiumEvents = DataSource.cesiumEvents.concat();
+CzmlDataSource.cesiumProps = DataSourceContainer.cesiumProps.concat();
+CzmlDataSource.cesiumEvents = DataSourceContainer.cesiumEvents.concat();
 
 var GeoJsonDataSource =
 /*#__PURE__*/
@@ -1192,9 +1200,9 @@ function (_DataSource) {
   };
 
   return GeoJsonDataSource;
-}(DataSource);
+}(DataSourceContainer);
 
-GeoJsonDataSource.propTypes = _objectSpread({}, DataSource.propTypes, {
+GeoJsonDataSource.propTypes = _objectSpread({}, DataSourceContainer.propTypes, {
   clampToGround: PropTypes.bool,
   data: PropTypes.object,
   describe: PropTypes.any,
@@ -1210,9 +1218,8 @@ GeoJsonDataSource.propTypes = _objectSpread({}, DataSource.propTypes, {
   strokeWidth: PropTypes.number,
   url: PropTypes.string
 });
-GeoJsonDataSource.contextTypes = _objectSpread({}, DataSource.contextTypes);
-GeoJsonDataSource.cesiumProps = DataSource.cesiumProps.concat();
-GeoJsonDataSource.cesiumEvents = DataSource.cesiumEvents.concat();
+GeoJsonDataSource.cesiumProps = DataSourceContainer.cesiumProps.concat();
+GeoJsonDataSource.cesiumEvents = DataSourceContainer.cesiumEvents.concat();
 
 var KmlDataSource =
 /*#__PURE__*/
@@ -1226,7 +1233,7 @@ function (_DataSource) {
   var _proto = KmlDataSource.prototype;
 
   _proto.createCesiumElement = function createCesiumElement(options) {
-    var scene = this.context.scene;
+    var scene = this.props.scene;
     return new cesium.KmlDataSource({
       camera: options.camera || (scene ? scene.camera : undefined),
       canvas: options.canvas || (scene ? scene.canvas : undefined),
@@ -1281,9 +1288,9 @@ function (_DataSource) {
   };
 
   return KmlDataSource;
-}(DataSource);
+}(DataSourceContainer);
 
-KmlDataSource.propTypes = _objectSpread({}, DataSource.propTypes, {
+KmlDataSource.propTypes = _objectSpread({}, DataSourceContainer.propTypes, {
   clampToGround: PropTypes.bool,
   data: PropTypes.any,
   onError: PropTypes.func,
@@ -1295,12 +1302,17 @@ KmlDataSource.propTypes = _objectSpread({}, DataSource.propTypes, {
   sourceUri: PropTypes.string,
   url: PropTypes.string
 });
-KmlDataSource.contextTypes = _objectSpread({}, DataSource.contextTypes, {
-  scene: sceneType
-});
-KmlDataSource.cesiumProps = DataSource.cesiumProps.concat();
+KmlDataSource.cesiumProps = DataSourceContainer.cesiumProps.concat();
 KmlDataSource.cesiumReadonlyProps = ["camera", "canvas", "proxy"];
-KmlDataSource.cesiumEvents = DataSource.cesiumEvents.concat(["refreshEvent", "unsupportedNodeEvent"]);
+KmlDataSource.cesiumEvents = DataSourceContainer.cesiumEvents.concat(["refreshEvent", "unsupportedNodeEvent"]);
+
+var KmlDataSourceContainer = function KmlDataSourceContainer(props) {
+  return React.createElement(SceneContext.Consumer, null, function (scene) {
+    return React.createElement(KmlDataSource, _extends({}, props, {
+      scene: scene
+    }));
+  });
+};
 
 var Primitive =
 /*#__PURE__*/
@@ -1318,35 +1330,16 @@ function (_CesiumComponent) {
   };
 
   _proto.mountCesiumElement = function mountCesiumElement(premitive) {
-    this.parent.add(premitive);
+    this.props.primitiveCollection.add(premitive);
   };
 
   _proto.destroyCesiumElement = function destroyCesiumElement(premitive) {
-    var p = this.parent;
+    var primitiveCollection = this.props.primitiveCollection;
 
-    if (p) {
-      p.remove(premitive);
+    if (primitiveCollection) {
+      primitiveCollection.remove(premitive);
     }
   };
-
-  _createClass(Primitive, [{
-    key: "parent",
-    get: function get() {
-      var _this$context = this.context,
-          premitiveCollection = _this$context.premitiveCollection,
-          scene = _this$context.scene;
-
-      if (premitiveCollection && !premitiveCollection.isDestroyed()) {
-        return premitiveCollection;
-      }
-
-      if (scene && !scene.isDestroyed()) {
-        return scene.primitives; // TODO: scene#groundPrimitives
-      }
-
-      return null;
-    }
-  }]);
 
   return Primitive;
 }(CesiumComponent);
@@ -1366,12 +1359,18 @@ Primitive.propTypes = _objectSpread({}, CesiumComponent.propTypes, {
   shadows: PropTypes.any,
   show: PropTypes.bool
 });
-Primitive.contextTypes = {
-  primitiveCollection: primitiveCollectionType,
-  scene: sceneType
-};
 Primitive.cesiumProps = ["allowPicking", "appearance", "cull", "debugShowBoundingVolume", "depthFailAppearance", "modelMatrix", "shadows", "show"];
 Primitive.cesiumReadOnlyProps = ["asynchronous", "compressVertices", "geometryInstances", "interleave", "releaseGeometryInstances"];
+
+var PrimitiveContainer = function PrimitiveContainer(props) {
+  return React.createElement(SceneContext.Consumer, null, function (scene) {
+    return React.createElement(PrimitiveCollectionContext.Consumer, null, function (primitiveCollection) {
+      return React.createElement(Primitive, _extends({}, props, {
+        primitiveCollection: primitiveCollection || scene.primitives
+      }));
+    });
+  });
+};
 
 var PointPrimitive =
 /*#__PURE__*/
@@ -1398,31 +1397,18 @@ function (_CesiumComponent) {
   };
 
   _proto.mountCesiumElement = function mountCesiumElement() {
-    this.cesiumElement = this.parent.add(this.initialOptions);
+    this.cesiumElement = this.props.primitives.add(this.initialOptions);
   };
 
   _proto.destroyCesiumElement = function destroyCesiumElement(primitive) {
-    var p = this.parent;
+    var primitives = this.props.primitives;
 
-    if (p && !p.isDestroyed() && primitive) {
-      p.remove(primitive);
+    if (primitives && !primitives.isDestroyed() && primitive) {
+      primitives.remove(primitive);
     }
 
     this.initialOptions = null;
   };
-
-  _createClass(PointPrimitive, [{
-    key: "parent",
-    get: function get() {
-      var pointPrimitiveCollection = this.context.pointPrimitiveCollection;
-
-      if (pointPrimitiveCollection && !pointPrimitiveCollection.isDestroyed()) {
-        return pointPrimitiveCollection;
-      }
-
-      return null;
-    }
-  }]);
 
   return PointPrimitive;
 }(CesiumComponent);
@@ -1440,12 +1426,17 @@ PointPrimitive.propTypes = _objectSpread({}, CesiumComponent.propTypes, {
   show: PropTypes.bool,
   translucencyByDistance: PropTypes.any
 });
-PointPrimitive.contextTypes = {
-  pointPrimitiveCollection: pointPrimitiveCollectionType
-};
 PointPrimitive.cesiumProps = ["color", "disableDepthTestDistance", "distanceDisplayCondition", "id", "outlineColor", "outlineWidth", "pixelSize", "position", "scaleByDistance", "show", "translucencyByDistance"];
 
-var PointPrimitiveCollection =
+var PointPrimitiveContainer = function PointPrimitiveContainer(props) {
+  return React.createElement(PointPrimitiveCollectionContext.Consumer, null, function (primitives) {
+    return React.createElement(PointPrimitiveCollection, _extends({}, props, {
+      primitives: primitives
+    }));
+  });
+};
+
+var PointPrimitiveCollection$1 =
 /*#__PURE__*/
 function (_CesiumComponent) {
   _inheritsLoose(PointPrimitiveCollection, _CesiumComponent);
@@ -1456,24 +1447,18 @@ function (_CesiumComponent) {
 
   var _proto = PointPrimitiveCollection.prototype;
 
-  _proto.getChildContext = function getChildContext() {
-    return {
-      pointPrimitiveCollection: this.cesiumElement
-    };
-  };
-
   _proto.createCesiumElement = function createCesiumElement(options) {
     return new cesium.PointPrimitiveCollection(options);
   };
 
   _proto.mountCesiumElement = function mountCesiumElement(col) {
-    this.parent.add(col);
+    this.props.primitiveCollection.add(col);
   };
 
   _proto.destroyCesiumElement = function destroyCesiumElement(col) {
-    var p = this.parent;
+    var primitiveCollection = this.props.primitiveCollection;
 
-    if (p && !p.isDestroyed()) {
+    if (primitives && !primitives.isDestroyed()) {
       p.remove(col);
     }
 
@@ -1482,41 +1467,31 @@ function (_CesiumComponent) {
     }
   };
 
-  _createClass(PointPrimitiveCollection, [{
-    key: "parent",
-    get: function get() {
-      var _this$context = this.context,
-          premitiveCollection = _this$context.premitiveCollection,
-          scene = _this$context.scene;
-
-      if (premitiveCollection && !premitiveCollection.isDestroyed()) {
-        return premitiveCollection;
-      }
-
-      if (scene && !scene.isDestroyed()) {
-        return scene.primitives;
-      }
-
-      return null;
-    }
-  }]);
+  _proto.render = function render() {
+    return React.createElement(PointPrimitiveCollectionContext.Provider, {
+      value: this.cesiumElement
+    }, this.props.children);
+  };
 
   return PointPrimitiveCollection;
 }(CesiumComponent);
 
-PointPrimitiveCollection.propTypes = _objectSpread({}, CesiumComponent.propTypes, {
+PointPrimitiveCollection$1.propTypes = _objectSpread({}, CesiumComponent.propTypes, {
   blendOption: PropTypes.any,
   debugShowBoundingVolume: PropTypes.bool,
   modelMatrix: PropTypes.any
 });
-PointPrimitiveCollection.contextTypes = {
-  primitiveCollection: primitiveCollectionType,
-  scene: sceneType
+PointPrimitiveCollection$1.cesiumProps = ["blendOption", "debugShowBoundingVolume", "modelMatrix"];
+
+var PointPrimitiveCollectionContainer = function PointPrimitiveCollectionContainer(props) {
+  return React.createElement(SceneContext.Consumer, null, function (scene) {
+    return React.createElement(PrimitiveCollectionContext.Consumer, null, function (primitiveCollection) {
+      return React.createElement(PointPrimitiveCollection$1, _extends({}, props, {
+        primitiveCollection: primitiveCollection || scene.primitives
+      }));
+    });
+  });
 };
-PointPrimitiveCollection.childContextTypes = {
-  pointPrimitiveCollection: pointPrimitiveCollectionType
-};
-PointPrimitiveCollection.cesiumProps = ["blendOption", "debugShowBoundingVolume", "modelMatrix"];
 
 var ScreenSpaceEvent =
 /*#__PURE__*/
@@ -1531,10 +1506,10 @@ function (_React$PureComponent) {
 
   _proto.componentDidMount = function componentDidMount() {
     var _this$props = this.props,
+        screenSpaceEventHandler = _this$props.screenSpaceEventHandler,
         action = _this$props.action,
         modifier = _this$props.modifier,
         type = _this$props.type;
-    var screenSpaceEventHandler = this.context.screenSpaceEventHandler;
 
     if (action) {
       screenSpaceEventHandler.setInputAction(action, type, modifier);
@@ -1545,17 +1520,17 @@ function (_React$PureComponent) {
   };
 
   _proto.componentDidUpdate = function componentDidUpdate(prevProps) {
-    var screenSpaceEventHandler = this.context.screenSpaceEventHandler;
+    var screenSpaceEventHandler = this.props.screenSpaceEventHandler;
     screenSpaceEventHandler.removeInputAction(prevProps.type, prevProps.modifier);
     this.componentDidMount();
   };
 
   _proto.componentWillUnmount = function componentWillUnmount() {
     var _this$props2 = this.props,
+        screenSpaceEventHandler = _this$props2.screenSpaceEventHandler,
         action = _this$props2.action,
         modifier = _this$props2.modifier,
         type = _this$props2.type;
-    var screenSpaceEventHandler = this.context.screenSpaceEventHandler;
 
     if (screenSpaceEventHandler && !screenSpaceEventHandler.isDestroyed() && action) {
       screenSpaceEventHandler.removeInputAction(type, modifier);
@@ -1567,15 +1542,20 @@ function (_React$PureComponent) {
   };
 
   return ScreenSpaceEvent;
-}(React.PureComponent);
+}(React$1.PureComponent);
 
 ScreenSpaceEvent.propTypes = {
   action: PropTypes.func,
   modifier: PropTypes.number,
   type: PropTypes.number.isRequired
 };
-ScreenSpaceEvent.contextTypes = {
-  screenSpaceEventHandler: screenSpaceEventHandlerType
+
+var ScreenSpaceEventContainer = function ScreenSpaceEventContainer(props) {
+  return React$1.createElement(ScreenSpaceEventHandlerContext.Consumer, null, function (screenSpaceEventHandler) {
+    return React$1.createElement(ScreenSpaceEvent, _extends({}, props, {
+      screenSpaceEventHandler: screenSpaceEventHandler
+    }));
+  });
 };
 
 var ScreenSpaceEventHandler =
@@ -1597,16 +1577,10 @@ function (_CesiumComponent) {
 
   var _proto = ScreenSpaceEventHandler.prototype;
 
-  _proto.getChildContext = function getChildContext() {
-    return {
-      screenSpaceEventHandler: this.cesiumElement
-    };
-  };
-
   _proto.createCesiumElement = function createCesiumElement() {
     if (this.props.useDefault) {
       this._useDefault = true;
-      return this.context.cesiumWidget.screenSpaceEventHandler;
+      return this.props.cesiumWidget.screenSpaceEventHandler;
     }
 
     return new cesium.ScreenSpaceEventHandler(this.parent.canvas);
@@ -1618,10 +1592,16 @@ function (_CesiumComponent) {
     }
   };
 
+  _proto.render = function render() {
+    return React$1.createElement(ScreenSpaceEventHandlerContext.Provider, {
+      value: this.cesiumElement
+    }, this.props.children);
+  };
+
   _createClass(ScreenSpaceEventHandler, [{
     key: "parent",
     get: function get() {
-      var scene = this.context.scene;
+      var scene = this.props.scene;
 
       if (scene && !scene.isDestroyed()) {
         return scene;
@@ -1637,28 +1617,32 @@ function (_CesiumComponent) {
 ScreenSpaceEventHandler.propTypes = _objectSpread({}, CesiumComponent.propTypes, {
   useDefault: PropTypes.bool
 });
-ScreenSpaceEventHandler.contextTypes = {
-  cesiumWidget: cesiumWidgetType,
-  scene: sceneType
-};
-ScreenSpaceEventHandler.childContextTypes = {
-  screenSpaceEventHandler: screenSpaceEventHandlerType
+
+var ScreenSpaceEventHandlerContainer = function ScreenSpaceEventHandlerContainer(props) {
+  return React$1.createElement(ViewerContext.Consumer, null, function (viewer) {
+    return React$1.createElement(SceneContext.Consumer, null, function (scene) {
+      return React$1.createElement(ScreenSpaceEventHandler, _extends({}, props, {
+        scene: scene,
+        cesiumWidget: viewer.cesiumWidget
+      }));
+    }, "}");
+  });
 };
 
-var imageryLayer =
+var ImageryLayer =
 /*#__PURE__*/
 function (_CesiumComponent) {
-  _inheritsLoose(imageryLayer, _CesiumComponent);
+  _inheritsLoose(ImageryLayer, _CesiumComponent);
 
-  function imageryLayer() {
+  function ImageryLayer() {
     return _CesiumComponent.apply(this, arguments) || this;
   }
 
-  var _proto = imageryLayer.prototype;
+  var _proto = ImageryLayer.prototype;
 
   _proto.createCesiumElement = function createCesiumElement(options) {
     var imageryProvider = options.imageryProvider,
-        opts = _objectWithoutProperties(options, ["imageryProvider"]);
+        opts = _objectWithoutPropertiesLoose(options, ["imageryProvider"]);
 
     return new cesium.ImageryLayer(imageryProvider, opts);
   };
@@ -1675,16 +1659,10 @@ function (_CesiumComponent) {
     }
   };
 
-  _createClass(imageryLayer, [{
+  _createClass(ImageryLayer, [{
     key: "parent",
     get: function get() {
-      var _this$context = this.context,
-          imageryLayerCollection = _this$context.imageryLayerCollection,
-          scene = _this$context.scene;
-
-      if (imageryLayerCollection && !imageryLayerCollection.isDestroyed()) {
-        return imageryLayerCollection;
-      }
+      var scene = this.props.scene;
 
       if (scene && !scene.isDestroyed()) {
         return scene.imageryLayers;
@@ -1694,10 +1672,10 @@ function (_CesiumComponent) {
     }
   }]);
 
-  return imageryLayer;
+  return ImageryLayer;
 }(CesiumComponent);
 
-imageryLayer.propTypes = _objectSpread({}, CesiumComponent.propTypes, {
+ImageryLayer.propTypes = _objectSpread({}, CesiumComponent.propTypes, {
   availability: PropTypes.any,
   billboard: PropTypes.any,
   box: PropTypes.any,
@@ -1726,13 +1704,17 @@ imageryLayer.propTypes = _objectSpread({}, CesiumComponent.propTypes, {
   viewFrom: PropTypes.any,
   wall: PropTypes.any
 });
-imageryLayer.contextTypes = {
-  imageryLayerCollection: imageryLayerCollectionType,
-  scene: sceneType
+ImageryLayer.cesiumProps = ["alpha", "brightness", "contrast", "hue", "saturation", "gamma", "splitDirection", "minificationFilter", "magnificationFilter", "show"];
+ImageryLayer.cesiumReadOnlyProps = ["imageryProvider", "rectangle", "maximumAnisotropy", "minimumTerrainLevel", "maximumTerrainLevel"];
+ImageryLayer.cesiumEvents = ["definitionChanged"];
+
+var ImageryLayerContainer = function ImageryLayerContainer(props) {
+  return React.createElement(SceneContext.Consumer, null, function (scene) {
+    return React.createElement(ImageryLayer, _extends({}, props, {
+      scene: scene
+    }));
+  });
 };
-imageryLayer.cesiumProps = ["alpha", "brightness", "contrast", "hue", "saturation", "gamma", "splitDirection", "minificationFilter", "magnificationFilter", "show"];
-imageryLayer.cesiumReadOnlyProps = ["imageryProvider", "rectangle", "maximumAnisotropy", "minimumTerrainLevel", "maximumTerrainLevel"];
-imageryLayer.cesiumEvents = ["definitionChanged"];
 
 var CameraOperation =
 /*#__PURE__*/
@@ -1766,25 +1748,21 @@ function (_React$PureComponent) {
     return null;
   };
 
-  _createClass(CameraOperation, [{
-    key: "camera",
-    get: function get() {
-      var _this$context = this.context,
-          camera = _this$context.camera,
-          scene = _this$context.scene;
-      return camera || scene.camera;
-    }
-  }]);
-
   return CameraOperation;
-}(React.PureComponent);
+}(React$1.PureComponent);
 
 CameraOperation.propTypes = {
   cancelCameraFlight: PropTypes.bool
 };
-CameraOperation.contextTypes = {
-  camera: cameraType,
-  scene: sceneType
+
+var CameraOperationContainer = function CameraOperationContainer(props) {
+  return React$1.createElement(SceneContext.Consumer, null, function (scene) {
+    return React$1.createElement(CameraContext.Consumer, null, function (camera) {
+      return React$1.createElement(CameraOperation, _extends({}, props, {
+        camera: camera || scene.camera
+      }));
+    });
+  });
 };
 
 var CameraFlyHome =
@@ -1804,9 +1782,9 @@ function (_CameraOperation) {
   };
 
   return CameraFlyHome;
-}(CameraOperation);
+}(CameraOperationContainer);
 
-CameraFlyHome.propTypes = _objectSpread({}, CameraOperation.propTypes, {
+CameraFlyHome.propTypes = _objectSpread({}, CameraOperationContainer.propTypes, {
   duration: PropTypes.number
 });
 
@@ -1850,9 +1828,9 @@ function (_CameraOperation) {
   };
 
   return CameraFlyTo;
-}(CameraOperation);
+}(CameraOperationContainer);
 
-CameraFlyTo.propTypes = _objectSpread({}, CameraOperation.propTypes, {
+CameraFlyTo.propTypes = _objectSpread({}, CameraOperationContainer.propTypes, {
   destination: PropTypes.any.isRequired,
   duration: PropTypes.number,
   easingFunction: PropTypes.any,
@@ -1905,9 +1883,9 @@ function (_CameraOperation) {
   };
 
   return CameraFlyToBoundingSphere;
-}(CameraOperation);
+}(CameraOperationContainer);
 
-CameraFlyToBoundingSphere.propTypes = _objectSpread({}, CameraOperation.propTypes, {
+CameraFlyToBoundingSphere.propTypes = _objectSpread({}, CameraOperationContainer.propTypes, {
   boundingSphere: PropTypes.any.isRequired,
   duration: PropTypes.number,
   easingFunction: PropTypes.any,
@@ -1921,25 +1899,120 @@ CameraFlyToBoundingSphere.propTypes = _objectSpread({}, CameraOperation.propType
   pitchAdjustHeight: PropTypes.number
 });
 
+var Cesium3DTileset =
+/*#__PURE__*/
+function (_CesiumComponent) {
+  _inheritsLoose(Cesium3DTileset, _CesiumComponent);
+
+  function Cesium3DTileset() {
+    return _CesiumComponent.apply(this, arguments) || this;
+  }
+
+  var _proto = Cesium3DTileset.prototype;
+
+  _proto.createCesiumElement = function createCesiumElement(options) {
+    return new cesium.Cesium3DTileset(options);
+  };
+
+  _proto.mountCesiumElement = function mountCesiumElement(cesiumElement) {
+    this.props.scene.primitives.add(cesiumElement);
+  };
+
+  _proto.destroyCesiumElement = function destroyCesiumElement(cesiumElement) {
+    var primitives = this.props.scene.primitives;
+
+    if (primitives) {
+      primitives.remove(cesiumElement);
+    }
+  };
+
+  _proto.render = function render() {
+    return React$1.createElement(Cesium3DTilesetContext.Provider, {
+      value: this.cesiumElement
+    }, this.props.children);
+  };
+
+  return Cesium3DTileset;
+}(CesiumComponent);
+
+Cesium3DTileset.propTypes = {
+  url: PropTypes.any,
+  show: PropTypes.bool,
+  // modelMatrix: PropTypes., // Matrix4 Matrix4.IDENTITY  optional A 4x4 transformation matrix that transforms the tileset's root tile.
+  // shadows: PropTypes., // ShadowMode  ShadowMode.ENABLED  optional Determines whether the tileset casts or receives shadows from each light source.
+  maximumScreenSpaceError: PropTypes.number,
+  maximumMemoryUsage: PropTypes.number,
+  cullWithChildrenBounds: PropTypes.bool,
+  dynamicScreenSpaceError: PropTypes.bool,
+  dynamicScreenSpaceErrorDensity: PropTypes.number,
+  dynamicScreenSpaceErrorFactor: PropTypes.number,
+  dynamicScreenSpaceErrorHeightFalloff: PropTypes.number,
+  skipLevelOfDetail: PropTypes.bool,
+  baseScreenSpaceError: PropTypes.number,
+  skipScreenSpaceErrorFactor: PropTypes.number,
+  skipLevels: PropTypes.number,
+  immediatelyLoadDesiredLevelOfDetail: PropTypes.bool,
+  loadSiblings: PropTypes.bool,
+  // clippingPlanes: PropTypes., //  ClippingPlaneCollection   optional The ClippingPlaneCollection used to selectively disable rendering the tileset.
+  // classificationType: PropTypes., //  ClassificationType    optional Determines whether terrain, 3D Tiles or both will be classified by this tileset. See Cesium3DTileset#classificationType for details about restrictions and limitations.
+  // ellipsoid: PropTypes., // Ellipsoid Ellipsoid.WGS84 optional The ellipsoid determining the size and shape of the globe.
+  debugFreezeFrame: PropTypes.bool,
+  debugColorizeTiles: PropTypes.bool,
+  debugWireframe: PropTypes.bool,
+  debugShowBoundingVolume: PropTypes.bool,
+  debugShowContentBoundingVolume: PropTypes.bool,
+  debugShowViewerRequestVolume: PropTypes.bool,
+  debugShowGeometricError: PropTypes.bool,
+  debugShowRenderingStatistics: PropTypes.bool,
+  debugShowMemoryUsage: PropTypes.bool,
+  debugShowUrl: PropTypes.bool,
+  pointCloudShading: PropTypes.object
+};
+Cesium3DTileset.contextTypes = {
+  primitiveCollection: primitiveCollectionType,
+  scene: sceneType,
+  viewer: viewerType
+};
+Cesium3DTileset.cesiumProps = ["url", "show", // "modelMatrix",
+// "shadows",
+"maximumScreenSpaceError", "maximumMemoryUsage", "cullWithChildrenBounds", "dynamicScreenSpaceError", "dynamicScreenSpaceErrorDensity", "dynamicScreenSpaceErrorFactor", "dynamicScreenSpaceErrorHeightFalloff", "skipLevelOfDetail", "baseScreenSpaceError", "skipScreenSpaceErrorFactor", "skipLevels", "immediatelyLoadDesiredLevelOfDetail", "loadSiblings", // "clippingPlanes",
+// "classificationType",
+// "ellipsoid",
+"debugFreezeFrame", "debugColorizeTiles", "debugWireframe", "debugShowBoundingVolume", "debugShowContentBoundingVolume", "debugShowViewerRequestVolume", "debugShowGeometricError", "debugShowRenderingStatistics", "debugShowMemoryUsage", "debugShowUrl", "pointCloudShading"];
+Cesium3DTileset.cesiumReadOnlyProps = ["asset", "basePath", "boundingSphere", // "classificationType",
+// "ellipsoid",
+"properties", "ready", "readyPromise", "tilesLoaded", "timeSinceLoad", "totalMemoryUsageInBytes"];
+Cesium3DTileset.cesiumEvents = ["allTilesLoaded", "loadProgress", "tileFailed", "tileLoad", "tileUnload", "tileVisible"];
+
+var Cesium3DTilesetContainer = function Cesium3DTilesetContainer(props) {
+  return React$1.createElement(SceneContext.Consumer, null, function (scene) {
+    return React$1.createElement(Cesium3DTileset, _extends({}, props, {
+      scene: scene
+    }));
+  });
+};
+
 exports.PropTypes = types;
+exports.CesiumContext = index;
 exports.Viewer = Viewer;
 exports.CesiumWidget = CesiumWidget;
 exports.Scene = Scene;
-exports.Camera = Camera;
-exports.Entity = Entity;
-exports.DataSource = DataSource;
+exports.Camera = CameraContainer;
+exports.Entity = EntityContainer;
+exports.DataSource = DataSourceContainer;
 exports.CustomDataSource = CustomDataSource;
 exports.CzmlDataSource = CzmlDataSource;
 exports.GeoJsonDataSource = GeoJsonDataSource;
-exports.KmlDataSource = KmlDataSource;
-exports.Primitive = Primitive;
-exports.PointPrimitive = PointPrimitive;
-exports.PointPrimitiveCollection = PointPrimitiveCollection;
-exports.ScreenSpaceEvent = ScreenSpaceEvent;
-exports.ScreenSpaceEventHandler = ScreenSpaceEventHandler;
-exports.ScreenSpaceCameraController = ScreenSpaceEventHandler;
-exports.ImageryLayer = imageryLayer;
-exports.CameraOperation = CameraOperation;
+exports.KmlDataSource = KmlDataSourceContainer;
+exports.Primitive = PrimitiveContainer;
+exports.PointPrimitive = PointPrimitiveContainer;
+exports.PointPrimitiveCollection = PointPrimitiveCollectionContainer;
+exports.ScreenSpaceEvent = ScreenSpaceEventContainer;
+exports.ScreenSpaceEventHandler = ScreenSpaceEventHandlerContainer;
+exports.ScreenSpaceCameraController = ScreenSpaceEventHandlerContainer;
+exports.ImageryLayer = ImageryLayerContainer;
+exports.CameraOperation = CameraOperationContainer;
 exports.CameraFlyHome = CameraFlyHome;
 exports.CameraFlyTo = CameraFlyTo;
 exports.CameraFlyToBoundingSphere = CameraFlyToBoundingSphere;
+exports.Cesium3DTileset = Cesium3DTilesetContainer;

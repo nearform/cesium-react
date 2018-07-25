@@ -1,11 +1,12 @@
+import React from "react";
 import ReactDOMServer from "react-dom/server.browser";
 import PropTypes from "prop-types";
 import { Entity as CesiumEntity } from "cesium";
 
 import CesiumComponent from "./CesiumComponent";
-import { entityCollectionType } from "./types";
+import { EntitiesContext } from "./context";
 
-export default class Entity extends CesiumComponent {
+class Entity extends CesiumComponent {
   static propTypes = {
     ...CesiumComponent.propTypes,
     availability: PropTypes.any,
@@ -36,10 +37,6 @@ export default class Entity extends CesiumComponent {
     show: PropTypes.any,
     viewFrom: PropTypes.any,
     wall: PropTypes.any,
-  };
-
-  static contextTypes = {
-    entityCollection: entityCollectionType,
   };
 
   static cesiumProps = [
@@ -77,9 +74,9 @@ export default class Entity extends CesiumComponent {
   static cesiumNoRender = true;
 
   get parent() {
-    const { entityCollection } = this.context;
-    if (entityCollection) {
-      return entityCollection;
+    const { entities } = this.props.entities;
+    if (entities) {
+      return entities;
     }
     return null;
   }
@@ -95,7 +92,7 @@ export default class Entity extends CesiumComponent {
   }
 
   mountCesiumElement(entity) {
-    this.parent.add(entity);
+    this.props.entities.add(entity);
   }
 
   updateCesiumElement(entity, prev) {
@@ -109,9 +106,17 @@ export default class Entity extends CesiumComponent {
   }
 
   destroyCesiumElement(entity) {
-    const p = this.parent;
-    if (p) {
-      p.remove(entity);
+    const entities = this.props.entities;
+    if (entities) {
+      entities.remove(entity);
     }
   }
 }
+
+const EntityContainer = props => (
+  <EntitiesContext.Consumer>
+    {entities => <Entity {...props} entities={entities} />}
+  </EntitiesContext.Consumer>
+);
+
+export default EntityContainer;

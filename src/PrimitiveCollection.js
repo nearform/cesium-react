@@ -1,21 +1,20 @@
 import PropTypes from "prop-types";
-import { PointPrimitiveCollection as CesiumPointPrimitiveCollection } from "cesium";
+import { PrimitiveCollection as CesiumPrimitiveCollection } from "cesium";
 
 import CesiumComponent from "./CesiumComponent";
-import { PointPrimitiveCollectionContext, PrimitiveCollectionContext, SceneContext } from "./context";
+import { PrimitiveCollectionContext, SceneContext } from "./context";
 
-class PointPrimitiveCollection extends CesiumComponent {
+class PrimitiveCollection extends CesiumComponent {
   static propTypes = {
     ...CesiumComponent.propTypes,
-    blendOption: PropTypes.any,
-    debugShowBoundingVolume: PropTypes.bool,
-    modelMatrix: PropTypes.any,
+    show: PropTypes.bool,
+    destroyPrimitives: PropTypes.bool,
   };
 
-  static cesiumProps = ["blendOption", "debugShowBoundingVolume", "modelMatrix"];
+  static cesiumProps = ["show", "destroyPrimitives"];
 
   createCesiumElement(options) {
-    return new CesiumPointPrimitiveCollection(options);
+    return new CesiumPrimitiveCollection(options);
   }
 
   mountCesiumElement(col) {
@@ -34,14 +33,14 @@ class PointPrimitiveCollection extends CesiumComponent {
 
   render() {
     return (
-      <PointPrimitiveCollectionContext.Provider value={this.cesiumElement}>
+      <PrimitiveCollectionContext.Provider value={this.cesiumElement}>
         {this.props.children}
-      </PointPrimitiveCollectionContext.Provider>
+      </PrimitiveCollectionContext.Provider>
     );
   }
 }
 
-const PointPrimitiveCollectionContainer = props => (
+const PrimitiveCollectionContainer = props => (
   <SceneContext.Consumer>
     {scene => (
       <PrimitiveCollectionContext.Consumer>
@@ -53,4 +52,4 @@ const PointPrimitiveCollectionContainer = props => (
   </SceneContext.Consumer>
 );
 
-export default PointPrimitiveCollectionContainer;
+export default PrimitiveCollectionContainer;

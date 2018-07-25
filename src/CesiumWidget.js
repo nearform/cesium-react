@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { CesiumWidget as CesiumCesiumWidget } from "cesium";
 
 import CesiumComponent from "./CesiumComponent";
-import { cesiumWidgetType, sceneType } from "./types";
+import { SceneContext, CesiumWidgetContext } from "./context";
 
 export default class CesiumWidget extends CesiumComponent {
   static propTypes = {
@@ -40,11 +40,6 @@ export default class CesiumWidget extends CesiumComponent {
     style: {},
   };
 
-  static childContextTypes = {
-    cesiumWidget: cesiumWidgetType,
-    scene: sceneType,
-  };
-
   static cesiumProps = [
     "scene3DOnly",
     "clock",
@@ -69,13 +64,6 @@ export default class CesiumWidget extends CesiumComponent {
   ];
 
   static initCesiumComponentWhenComponentDidMount = true;
-
-  getChildContext() {
-    return {
-      cesiumWidget: this.cesiumElement,
-      scene: this.cesiumElement ? this.cesiumElement.scene : null,
-    };
-  }
 
   componentDidMount() {
     super.componentDidMount();
@@ -117,7 +105,16 @@ export default class CesiumWidget extends CesiumComponent {
           ...style,
         }}
         {...containerProps}>
-        {this.cesiumElement ? children : null}
+        {this.cesiumElement
+          ? (
+            <CesiumWidgetContext.Provider value={this.cesiumElement}>
+              <SceneContext.Provider value={this.cesiumElement.scene}>
+                {children}
+              </SceneContext.Provider>
+            </CesiumWidgetContext.Provider>
+          )
+          : null
+        }
       </div>
     );
   }

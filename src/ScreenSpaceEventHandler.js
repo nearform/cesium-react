@@ -1,32 +1,20 @@
+import React from "react";
 import PropTypes from "prop-types";
 import { ScreenSpaceEventHandler as CesiumScreenSpaceEventHandler } from "cesium";
 
 import CesiumComponent from "./CesiumComponent";
-import { cesiumWidgetType, sceneType, screenSpaceEventHandlerType } from "./types";
+import { ViewerContext, SceneContext, ScreenSpaceEventHandlerContext } from "./context";
 
-export default class ScreenSpaceEventHandler extends CesiumComponent {
+class ScreenSpaceEventHandler extends CesiumComponent {
   static propTypes = {
     ...CesiumComponent.propTypes,
     useDefault: PropTypes.bool,
   };
 
-  static contextTypes = {
-    cesiumWidget: cesiumWidgetType,
-    scene: sceneType,
-  };
-
-  static childContextTypes = {
-    screenSpaceEventHandler: screenSpaceEventHandlerType,
-  };
-
-  getChildContext() {
-    return {
-      screenSpaceEventHandler: this.cesiumElement,
-    };
-  }
+  _useDefault = false;
 
   get parent() {
-    const { scene } = this.context;
+    const { scene } = this.props;
     if (scene && !scene.isDestroyed()) {
       return scene;
     }
@@ -36,7 +24,7 @@ export default class ScreenSpaceEventHandler extends CesiumComponent {
   createCesiumElement() {
     if (this.props.useDefault) {
       this._useDefault = true;
-      return this.context.cesiumWidget.screenSpaceEventHandler;
+      return this.props.cesiumWidget.screenSpaceEventHandler;
     }
     return new CesiumScreenSpaceEventHandler(this.parent.canvas);
   }
@@ -47,5 +35,23 @@ export default class ScreenSpaceEventHandler extends CesiumComponent {
     }
   }
 
-  _useDefault = false;
+  render() {
+    return (
+      <ScreenSpaceEventHandlerContext.Provider value={this.cesiumElement}>
+        {this.props.children}
+      </ScreenSpaceEventHandlerContext.Provider>
+    );
+  }
 }
+
+const ScreenSpaceEventHandlerContainer = props => (
+  <ViewerContext.Consumer>
+    {viewer => (
+      <SceneContext.Consumer>
+        {scene => <ScreenSpaceEventHandler {...props} scene={scene} cesiumWidget={viewer.cesiumWidget} />}}
+      </SceneContext.Consumer>
+    )}
+  </ViewerContext.Consumer>
+);
+
+export default ScreenSpaceEventHandlerContainer;

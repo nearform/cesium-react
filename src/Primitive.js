@@ -2,9 +2,9 @@ import PropTypes from "prop-types";
 import { Primitive as CesiumPrimitive } from "cesium";
 
 import CesiumComponent from "./CesiumComponent";
-import { primitiveCollectionType, sceneType } from "./types";
+import { PrimitiveCollectionContext, SceneContext } from "./context";
 
-export default class Primitive extends CesiumComponent {
+class Primitive extends CesiumComponent {
   static propTypes = {
     ...CesiumComponent.propTypes,
     allowPicking: PropTypes.any,
@@ -20,11 +20,6 @@ export default class Primitive extends CesiumComponent {
     releaseGeometryInstances: PropTypes.bool,
     shadows: PropTypes.any,
     show: PropTypes.bool,
-  };
-
-  static contextTypes = {
-    primitiveCollection: primitiveCollectionType,
-    scene: sceneType,
   };
 
   static cesiumProps = [
@@ -46,29 +41,32 @@ export default class Primitive extends CesiumComponent {
     "releaseGeometryInstances",
   ];
 
-  get parent() {
-    const { premitiveCollection, scene } = this.context;
-    if (premitiveCollection && !premitiveCollection.isDestroyed()) {
-      return premitiveCollection;
-    }
-    if (scene && !scene.isDestroyed()) {
-      return scene.primitives; // TODO: scene#groundPrimitives
-    }
-    return null;
-  }
-
   createCesiumElement(options) {
     return new CesiumPrimitive(options);
   }
 
   mountCesiumElement(premitive) {
-    this.parent.add(premitive);
+    this.props.primitiveCollection.add(premitive);
   }
 
   destroyCesiumElement(premitive) {
-    const p = this.parent;
-    if (p) {
-      p.remove(premitive);
+    const { primitiveCollection } = this.props;
+    if (primitiveCollection) {
+      primitiveCollection.remove(premitive);
     }
   }
 }
+
+const PrimitiveContainer = props => (
+  <SceneContext.Consumer>
+    {scene => (
+      <PrimitiveCollectionContext.Consumer>
+        {primitiveCollection => (
+          <Primitive {...props} primitiveCollection={primitiveCollection || scene.primitives} />
+        )}
+      </PrimitiveCollectionContext.Consumer>
+    )}
+  </SceneContext.Consumer>
+);
+
+export default PrimitiveContainer;

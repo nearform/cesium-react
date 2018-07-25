@@ -1,10 +1,10 @@
 import PropTypes from "prop-types";
 
 import CesiumComponent from "./CesiumComponent";
-import { entityCollectionType, dataSourceCollectionType } from "./types";
+import { DataSourcesContext, EntitiesContext } from "./context";
 
 // abstract
-export default class DataSource extends CesiumComponent {
+class DataSource extends CesiumComponent {
   static propTypes = {
     clock: PropTypes.any,
     clustering: PropTypes.any,
@@ -15,23 +15,9 @@ export default class DataSource extends CesiumComponent {
     show: PropTypes.bool,
   };
 
-  static contextTypes = {
-    dataSourceCollection: dataSourceCollectionType,
-  };
-
-  static childContextTypes = {
-    entityCollection: entityCollectionType,
-  };
-
   static cesiumProps = ["clock", "clustering", "name", "show"];
 
   static cesiumEvents = ["changedEvent", "errorEvent", "loadingEvent"];
-
-  getChildContext() {
-    return {
-      entityCollection: this.cesiumElement ? this.cesiumElement.entities : null,
-    };
-  }
 
   componentWillMount() {
     super.componentWillMount();
@@ -52,9 +38,9 @@ export default class DataSource extends CesiumComponent {
   }
 
   get parent() {
-    const { dataSourceCollection } = this.context;
-    if (dataSourceCollection && !dataSourceCollection.isDestroyed()) {
-      return dataSourceCollection;
+    const { dataSources } = this.props;
+    if (dataSources && !dataSources.isDestroyed()) {
+      return dataSources;
     }
     return null;
   }
@@ -73,4 +59,24 @@ export default class DataSource extends CesiumComponent {
       p.remove(entity);
     }
   }
+
+  render() {
+    return (
+      <EntitiesContext.Provider value={this.cesiumElement.entities}>
+        {this.props.children}
+      </EntitiesContext.Provider>
+    );
+  }
 }
+
+const DataSourceContainer = props => (
+  <DataSourcesContext.Consumer>
+    {dataSources => <DataSource {...props} dataSources={dataSources} />}
+  </DataSourcesContext.Consumer>
+);
+
+DataSourceContainer.propTypes = DataSource.propTypes;
+DataSourceContainer.cesiumProps = DataSource.cesiumProps;
+DataSourceContainer.cesiumEvents = DataSource.cesiumEvents;
+
+export default DataSourceContainer;

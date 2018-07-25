@@ -2,9 +2,9 @@ import PropTypes from "prop-types";
 import { KmlDataSource as CesiumKmlDataSource } from "cesium";
 
 import DataSource from "./DataSource";
-import { sceneType } from "./types";
+import { SceneContext } from "./context";
 
-export default class KmlDataSource extends DataSource {
+class KmlDataSource extends DataSource {
   static propTypes = {
     ...DataSource.propTypes,
     clampToGround: PropTypes.bool,
@@ -19,11 +19,6 @@ export default class KmlDataSource extends DataSource {
     url: PropTypes.string,
   };
 
-  static contextTypes = {
-    ...DataSource.contextTypes,
-    scene: sceneType,
-  };
-
   static cesiumProps = [...DataSource.cesiumProps];
 
   static cesiumReadonlyProps = ["camera", "canvas", "proxy"];
@@ -31,7 +26,7 @@ export default class KmlDataSource extends DataSource {
   static cesiumEvents = [...DataSource.cesiumEvents, "refreshEvent", "unsupportedNodeEvent"];
 
   createCesiumElement(options) {
-    const { scene } = this.context;
+    const { scene } = this.props;
     return new CesiumKmlDataSource({
       camera: options.camera || (scene ? scene.camera : undefined),
       canvas: options.canvas || (scene ? scene.canvas : undefined),
@@ -75,3 +70,12 @@ export default class KmlDataSource extends DataSource {
     }
   }
 }
+
+const KmlDataSourceContainer = props => (
+  <SceneContext.Consumer>
+    {scene => <KmlDataSource {...props} scene={scene} />}
+  </SceneContext.Consumer>
+);
+
+export default KmlDataSourceContainer;
+

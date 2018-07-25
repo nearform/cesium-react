@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
 
 import CesiumComponent from "./CesiumComponent";
-import { pointPrimitiveCollectionType } from "./types";
+import { PointPrimitiveCollectionContext } from "./context";
 
-export default class PointPrimitive extends CesiumComponent {
+class PointPrimitive extends CesiumComponent {
   static propTypes = {
     ...CesiumComponent.propTypes,
     color: PropTypes.any,
@@ -17,10 +17,6 @@ export default class PointPrimitive extends CesiumComponent {
     scaleByDistance: PropTypes.any,
     show: PropTypes.bool,
     translucencyByDistance: PropTypes.any,
-  };
-
-  static contextTypes = {
-    pointPrimitiveCollection: pointPrimitiveCollectionType,
   };
 
   static cesiumProps = [
@@ -37,30 +33,30 @@ export default class PointPrimitive extends CesiumComponent {
     "translucencyByDistance",
   ];
 
-  get parent() {
-    const { pointPrimitiveCollection } = this.context;
-    if (pointPrimitiveCollection && !pointPrimitiveCollection.isDestroyed()) {
-      return pointPrimitiveCollection;
-    }
-    return null;
-  }
-
   createCesiumElement(options) {
     this.initialOptions = options;
     return null;
   }
 
   mountCesiumElement() {
-    this.cesiumElement = this.parent.add(this.initialOptions);
+    this.cesiumElement = this.props.primitives.add(this.initialOptions);
   }
 
   destroyCesiumElement(primitive) {
-    const p = this.parent;
-    if (p && !p.isDestroyed() && primitive) {
-      p.remove(primitive);
+    const { primitives } = this.props;
+    if (primitives && !primitives.isDestroyed() && primitive) {
+      primitives.remove(primitive);
     }
     this.initialOptions = null;
   }
 
   initialOptions = null;
 }
+
+const PointPrimitiveContainer = props => (
+  <PointPrimitiveCollectionContext.Consumer>
+    {primitives => <PointPrimitiveCollection {...props} primitives={primitives} />}
+  </PointPrimitiveCollectionContext.Consumer>
+);
+
+export default PointPrimitiveContainer;

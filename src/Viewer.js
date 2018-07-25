@@ -4,12 +4,11 @@ import { Viewer as CesiumViewer } from "cesium";
 
 import CesiumComponent from "./CesiumComponent";
 import {
-  cesiumWidgetType,
-  dataSourceCollectionType,
-  entityCollectionType,
-  sceneType,
-  viewerType,
-} from "./types";
+  DataSourcesContext,
+  EntitiesContext,
+  SceneContext,
+  ViewerContext,
+} from "./context";
 
 export default class Viewer extends CesiumComponent {
   static propTypes = {
@@ -71,14 +70,6 @@ export default class Viewer extends CesiumComponent {
     style: {},
   };
 
-  static childContextTypes = {
-    cesiumWidget: cesiumWidgetType,
-    dataSourceCollection: dataSourceCollectionType,
-    entityCollection: entityCollectionType,
-    scene: sceneType,
-    viewer: viewerType,
-  };
-
   static cesiumProps = [
     "animation",
     "baseLayerPicker",
@@ -125,18 +116,6 @@ export default class Viewer extends CesiumComponent {
   static cesiumEvents = ["selectedEntityChanged", "trackedEntityChanged"];
 
   static initCesiumComponentWhenComponentDidMount = true;
-
-  getChildContext() {
-    return {
-      cesiumWidget: this.cesiumElement ? this.cesiumElement.cesiumWidget : null,
-      dataSourceCollection: this.cesiumElement
-        ? this.cesiumElement.dataSourceDisplay.dataSources
-        : null,
-      entityCollection: this.cesiumElement ? this.cesiumElement.entities : null,
-      scene: this.cesiumElement ? this.cesiumElement.scene : null,
-      viewer: this.cesiumElement,
-    };
-  }
 
   componentDidMount() {
     super.componentDidMount();
@@ -202,7 +181,20 @@ export default class Viewer extends CesiumComponent {
           ...style,
         }}
         {...containerProps}>
-        {this.cesiumElement ? children : null}
+        {this.cesiumElement
+          ? (
+            <ViewerContext.Provider value={this.cesiumElement}>
+              <SceneContext.Provider value={this.cesiumElement.scene}>
+                <EntitiesContext.Provider value={this.cesiumElement.entities}>
+                  <DataSourcesContext.Provider value={this.cesiumElement.dataSourceDisplay.dataSources}>
+                    {children}
+                  </DataSourcesContext.Provider>
+                </EntitiesContext.Provider>
+              </SceneContext.Provider>
+            </ViewerContext.Provider>
+          )
+          : null
+        }
       </div>
     );
   }

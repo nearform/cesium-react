@@ -1,3 +1,4 @@
+import React from "react";
 import { CustomDataSource as CesiumCustomDataSource } from "cesium";
 
 import DataSource from "./DataSource";
@@ -5,10 +6,6 @@ import DataSource from "./DataSource";
 export default class CustomDataSource extends DataSource {
   static PropTypes = {
     ...DataSource.propTypes,
-  };
-
-  static contextTypes = {
-    ...DataSource.contextTypes,
   };
 
   static cesiumProps = [...DataSource.cesiumProps];

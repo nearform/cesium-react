@@ -1,5 +1,7 @@
 export * as PropTypes from "./types";
 
+export * as CesiumContext from "./context";
+
 export Viewer from "./Viewer";
 export CesiumWidget from "./CesiumWidget";
 
@@ -29,3 +31,5 @@ export CameraOperation from "./CameraOperation";
 export CameraFlyHome from "./CameraFlyHome";
 export CameraFlyTo from "./CameraFlyTo";
 export CameraFlyToBoundingSphere from "./CameraFlyToBoundingSphere";
+
+export Cesium3DTileset from "./Cesium3DTileset";

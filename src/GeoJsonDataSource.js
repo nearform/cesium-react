@@ -22,10 +22,6 @@ export default class GeoJsonDataSource extends DataSource {
     url: PropTypes.string,
   };
 
-  static contextTypes = {
-    ...DataSource.contextTypes,
-  };
-
   static cesiumProps = [...DataSource.cesiumProps];
 
   static cesiumEvents = [...DataSource.cesiumEvents];
